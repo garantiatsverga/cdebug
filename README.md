@@ -1,6 +1,6 @@
-# CDebug - Colorful Debugging Utilities for Python
+# colordebug - Colorful Debugging Utilities for Python
 
-A powerful, production-ready logging and debugging library for Python with colorful console output, smart log rotation, security features, and async support.
+A powerful, production-ready logging and debugging library for Python with colorful console output, smart log rotation, security features, async support, and **text wrapping** capabilities.
 
 ## Features
 
@@ -11,19 +11,20 @@ A powerful, production-ready logging and debugging library for Python with color
 - 🔄 **Smart log rotation** with error preservation
 - 📊 **Performance monitoring** with execution timing
 - 🛠 **Flexible configuration** for different environments
+- 📜 **Text wrapping** for better log readability
 
 ## Installation
 
 ```bash
-pip install cdebug
+pip install colordebug
 ```
 
-Or copy `cdebug.py` directly into your project.
+Or copy `colordebug.py` directly into your project.
 
 ## Quick Start
 
 ```python
-from cdebug import *
+from colordebug import *
 
 # Basic usage
 info("Application started")
@@ -34,6 +35,10 @@ error("Something went wrong")
 # With file logging
 enable_file_logging("app.log")
 info("This will be logged to file", exp=True)
+
+# With text wrapping (new!)
+long_message = "This is a very long message that will be wrapped to multiple lines for better readability."
+info(long_message, exp=True, textwrapping=True, wrapint=40)
 ```
 
 ## Core Functions
@@ -87,7 +92,7 @@ def process_data(data):
 
 ```python
 import asyncio
-from cdebug import *
+from colordebug import *
 
 @alog_function_call(exp=True)
 @alog_execution_time(exp=True)
@@ -105,12 +110,59 @@ async def main():
     await fetch_data("https://api.example.com/data")
 ```
 
+## Text Wrapping (New!)
+
+colordebug now supports automatic text wrapping for better log readability.
+
+### Basic Text Wrapping
+
+```python
+from colordebug import *
+
+# Enable text wrapping for long messages
+long_message = "This is a very long message that should be wrapped to multiple lines based on the specified width."
+
+# Log with text wrapping (width = 40 characters)
+info(long_message, exp=True, textwrapping=True, wrapint=40)
+
+# Log without text wrapping
+debug(long_message, exp=True, textwrapping=False)
+```
+
+### Advanced Usage
+
+```python
+# Set default text wrapping for all logs
+enable_file_logging("app.log", textwrapping=True, wrapint=80)
+
+# Use with different log levels
+warning("This is a warning message that will be wrapped", exp=True, textwrapping=True, wrapint=50)
+error("This is an error message that will be wrapped", exp=True, textwrapping=True, wrapint=50)
+
+# Use with decorators
+@log_function_call(exp=True, textwrapping=True, wrapint=60)
+def process_data(data):
+    # Function logic here
+    pass
+```
+
+### Parameters
+
+- `textwrapping` (bool): Enable or disable text wrapping. Default: `False`
+- `wrapint` (int): Maximum line width in characters. Default: `80`
+
+### Notes
+
+- Text wrapping only applies to text format logs (not JSON format)
+- Wrapping preserves words and breaks at whitespace when possible
+- Very long words that exceed the wrap width will be broken as needed
+
 ## Security Features
 
 ### Sensitive Data Sanitization
 
 ```python
-from cdebug import *
+from colordebug import *
 
 # Add custom sensitive keys
 add_sensitive_keys(['credit_card', 'social_security', 'private_key'])
@@ -134,7 +186,7 @@ log_dict(user_data, "User registration", exp=True)
 ### Production Setup
 
 ```python
-from cdebug import *
+from colordebug import *
 
 setup_production_logging(
     log_file="production.log",
@@ -167,7 +219,7 @@ set_log_level('info')  # debug, info, warning, error, critical
 
 ## Log Rotation
 
-CDebug includes smart log rotation that preserves error messages:
+colordebug includes smart log rotation that preserves error messages:
 
 ```python
 set_max_log_lines(1000)  # Keep maximum 1000 lines
@@ -219,47 +271,49 @@ view_logs(limit=10)  # Show 10 most recent entries
 ### Web Application
 
 ```python
-from cdebug import *
+from colordebug import *
 from fastapi import FastAPI
 
 app = FastAPI()
-setup_production_logging("api.log", log_format='json')
+setup_production_logging("api.log", log_format='json', textwrapping=True, wrapint=100)
 
 @app.get("/users/{user_id}")
-@log_function_call(exp=True)
+@log_function_call(exp=True, textwrapping=True, wrapint=100)
 async def get_user(user_id: int):
-    await ainfo(f"Fetching user {user_id}", exp=True)
+    await ainfo(f"Fetching user {user_id}", exp=True, textwrapping=True, wrapint=100)
     
-    async with atimer("Database query", exp=True):
+    async with atimer("Database query", exp=True, textwrapping=True, wrapint=100):
         user = await db.users.find_one(user_id)
     
     if not user:
-        await awarning(f"User {user_id} not found", exp=True)
+        await awarning(f"User {user_id} not found", exp=True, textwrapping=True, wrapint=100)
         return {"error": "User not found"}
     
-    await asuccess(f"User {user_id} retrieved", exp=True)
+    await asuccess(f"User {user_id} retrieved successfully", exp=True, textwrapping=True, wrapint=100)
     return user
 ```
 
 ### Data Processing
 
 ```python
-from cdebug import *
+from colordebug import *
 
-@log_function_call(exp=True)
-@log_execution_time(exp=True)
+@log_function_call(exp=True, textwrapping=True, wrapint=80)
+@log_execution_time(exp=True, textwrapping=True, wrapint=80)
 def process_dataset(data):
-    log_value("dataset_size", len(data), exp=True)
-    log_value("data_columns", list(data.columns), exp=True)
+    log_value("dataset_size", len(data), exp=True, textwrapping=True, wrapint=80)
+    log_value("data_columns", list(data.columns), exp=True, textwrapping=True, wrapint=80)
     
-    with timer("Data cleaning", exp=True):
+    with timer("Data cleaning", exp=True, textwrapping=True, wrapint=80):
         cleaned_data = clean_data(data)
     
     log_condition(
         len(cleaned_data) > 0,
-        "Data cleaning successful",
-        "No data after cleaning",
-        exp=True
+        "Data cleaning successful - all data has been processed and validated",
+        "No data after cleaning - the dataset appears to be empty",
+        exp=True,
+        textwrapping=True,
+        wrapint=80
     )
     
     return cleaned_data
@@ -268,37 +322,38 @@ def process_dataset(data):
 ## API Reference
 
 ### Core Functions
-- `debug(msg, label, label_color, exp)`
-- `info(msg, exp)`
-- `success(msg, exp)`
-- `warning(msg, exp)`
-- `error(msg, exception, exp)`
-- `critical(msg, exp)`
+- `debug(msg, label, label_color, exp, textwrapping, wrapint)`
+- `info(msg, exp, textwrapping, wrapint)`
+- `success(msg, exp, textwrapping, wrapint)`
+- `warning(msg, exp, textwrapping, wrapint)`
+- `error(msg, exception, exp, textwrapping, wrapint)`
+- `critical(msg, exp, textwrapping, wrapint)`
 
 ### Async Functions
-- `adebug(msg, label, label_color, exp)`
-- `ainfo(msg, exp)`
-- `asuccess(msg, exp)`
-- `awarning(msg, exp)`
-- `aerror(msg, exception, exp)`
-- `acritical(msg, exp)`
+- `adebug(msg, label, label_color, exp, textwrapping, wrapint)`
+- `ainfo(msg, exp, textwrapping, wrapint)`
+- `asuccess(msg, exp, textwrapping, wrapint)`
+- `awarning(msg, exp, textwrapping, wrapint)`
+- `aerror(msg, exception, exp, textwrapping, wrapint)`
+- `acritical(msg, exp, textwrapping, wrapint)`
 
 ### Decorators
-- `@log_function_call(exp)`
-- `@alog_function_call(exp)`
-- `@log_execution_time(exp)`
-- `@alog_execution_time(exp)`
+- `@log_function_call(exp, textwrapping, wrapint)`
+- `@alog_function_call(exp, textwrapping, wrapint)`
+- `@log_execution_time(exp, textwrapping, wrapint)`
+- `@alog_execution_time(exp, textwrapping, wrapint)`
 
 ### Context Managers
-- `timer(description, exp)`
-- `atimer(description, exp)`
+- `timer(description, exp, textwrapping, wrapint)`
+- `atimer(description, exp, textwrapping, wrapint)`
 
 ### Configuration
-- `enable_file_logging(filename)`
-- `set_log_format(format_type)`
-- `add_sensitive_keys(keys)`
-- `set_max_log_lines(max_lines)`
-- `set_log_level(level)`
+- `enable_file_logging(filename, textwrapping, wrapint)`
+- `set_log_format(format_type, textwrapping, wrapint)`
+- `add_sensitive_keys(keys, textwrapping, wrapint)`
+- `set_max_log_lines(max_lines, textwrapping, wrapint)`
+- `set_log_level(level, textwrapping, wrapint)`
+- `setup_production_logging(log_file, max_lines, preserve_errors, console_output, log_format, sensitive_keys, textwrapping, wrapint)`
 
 ## Best Practices
 
@@ -307,6 +362,8 @@ def process_dataset(data):
 3. **Always enable error preservation** to never lose critical errors
 4. **Sanitize sensitive data** before logging user input
 5. **Use async functions** in web applications for better performance
+6. **Enable text wrapping** for better log readability with `textwrapping=True` and `wrapint=80`
+7. **Use appropriate wrap width** based on your logging system (80-120 characters recommended)
 
 ## Contributing
 
